@@ -4,50 +4,40 @@ const { User } = require('../db/User')
 const bcrypt = require('bcrypt')
 const JWT = require('jsonwebtoken')
 
+const SECRET_KEY = process.env.JWT_SECRET_KEY || "default_secret_key";
+
+const generateToken = (email) => {
+  return JWT.sign({ email }, SECRET_KEY, { expiresIn: "24h" });
+}
+
+const validateRequest = (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+}
+
 router.get('/', (req, res) => {
   res.send('Hello Authjs')
 })
 
 router.post('/register', body("email").isEmail(), body("password").isLength({ min: 6 }), async (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password
+  validateRequest(req, res);
 
-  const errors = validationResult(req)
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  const { email, password } = req.body;
 
   const user = User.find((user) => user.email === email)
   if (user) {
-    return res.status(400).json([
-      {
-        message: 'すでにそのユーザーは存在しています'
-      }
-    ])
+    return res.status(400).json({ message: 'すでにそのユーザーは存在しています' });
   }
 
-  let hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-  User.push(
-    {
-      email,
-      password: hashedPassword
-    },
-  )
+  User.push({ email, password: hashedPassword });
 
-  const token = await JWT.sign(
-    {
-      email,
-    },
-    "SECRET_KEY",
-    {
-      expiresIn: "24h"
-    }
-  )
+  const token = generateToken(email);
 
-  return res.json({
-    token: token
-  })
+  return res.json({ token });
 })
 
 router.post('/login', async (req, res) => {
@@ -55,35 +45,17 @@ router.post('/login', async (req, res) => {
   const user = User.find((user) => user.email == email)
 
   if (!user) {
-    return res.status(400).json([
-      {
-        message: "そのユーザーは存在しません。"
-      }
-    ])
+    return res.status(400).json({ message: "そのユーザーは存在しません。" });
   }
 
   const isMatch = await bcrypt.compare(password, user.password)
   if (!isMatch) {
-    return res.status(400).json([
-      {
-        message: 'パスワードが異なります'
-      }
-    ])
+    return res.status(400).json({ message: 'パスワードが異なります' });
   }
 
-  const token = await JWT.sign(
-    {
-      email,
-    },
-    "SECRET_KEY",
-    {
-      expiresIn: "24h"
-    }
-  )
+  const token = generateToken(email);
 
-  return res.json({
-    token: token
-  })
+  return res.json({ token });
 })
 
 router.get('/allUsers', (req, res) => {

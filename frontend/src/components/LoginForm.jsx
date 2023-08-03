@@ -1,17 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-
+import useAuth from '../hooks/useAuth';
 
 function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  console.log('test')
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // ここで認証処理を行います
-    console.log(`Email: ${email}, Password: ${password}`);
-  };
+  const { login, email, setEmail, password, setPassword, isLogin } = useAuth();
+  console.log(isLogin)
 
   return (
     <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
@@ -25,7 +18,7 @@ function LoginForm() {
               </div>
             </div>
             <div className="divide-y divide-gray-200">
-              <form className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7" onSubmit={handleSubmit}>
+              <form className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7" onSubmit={login}>
                 <div className="relative">
                   <input autoComplete="off" id="email" name="email" type="text" className="peer h-10 w-full border-b-2 border-gray-300 text-gray-900 placeholder-transparent focus:outline-none focus:border-rose-600" placeholder="Email Address" value={email} onChange={e => setEmail(e.target.value)} />
                   <label htmlFor="email" className="absolute left-0 -top-3.5 text-gray-600 text-sm light:text-gray-400 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm">Email Address</label>
@@ -38,7 +31,7 @@ function LoginForm() {
                   <input type="checkbox" id="remember" name="remember" className="rounded border-gray-300 text-rose-600" />
                   <label htmlFor="remember" className="text-sm text-gray-900">Remember me</label>
                 </div>
-                <button type="submit" className="mt-3 w-full bg-blue-500 text-white p-2 rounded-lg">Login</button>
+                <button type="submit" className="mt-3 w-full bg-blue-500 text-white p-2 rounded-lg"　onClick={login}>Login</button>
               </form>
               <div className="pt-6 text-base leading-6 font-bold sm:text-lg sm:leading-7">
                 <p>Don't have an account? <Link to="/signup" className="text-blue-500 hover:text-blue-600">Sign up!</Link></p>
